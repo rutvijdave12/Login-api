@@ -1,11 +1,11 @@
 const {infoLogger, errorLogger} = require('../../logger/logger');
 const User = require('../models/user');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const errors = require('../../errors/errors')
 const jwt = require('jsonwebtoken');
 const { jwtSecretKey, jwtExpiryTime } = require('../../config/config');
 
-async function signUpService(req, res, next){
+async function loginService(req, res, next){
     try{
         infoLogger(req.custom.id, req.body.requestId, "Checking if email exists");
         // Check if user exists
@@ -14,7 +14,7 @@ async function signUpService(req, res, next){
             infoLogger(req.custom.id, req.body.requestId, "User email doesn't exist");
             return res.status(401).json({
                 statusCode: 1,
-                timestamp: Date.now,
+                timestamp: Date.now(),
                 requestId: req.body.requestId,
                 info: {
                     code: errors['001'].code,
@@ -31,7 +31,7 @@ async function signUpService(req, res, next){
                 infoLogger(req.custom.id, req.body.requestId, "User password did not match");
                 return res.status(401).json({
                     statusCode: 1,
-                    timestamp: Date.now,
+                    timestamp: Date.now(),
                     requestId: req.body.requestId,
                     info: {
                         code: errors['001'].code,
@@ -44,6 +44,7 @@ async function signUpService(req, res, next){
             infoLogger(req.custom.id, req.body.requestId, "Signing a JWT token");
             // Signing a token
             const token = jwt.sign({
+                            user: userList[0].firstName,
                             email: userList[0].email,
                             userId: userList[0]._id
                         },
@@ -55,7 +56,7 @@ async function signUpService(req, res, next){
 
             return res.status(200).json({
                 statusCode: 0,
-                timestamp: Date.now,
+                timestamp: Date.now(),
                 requestId: req.body.requestId,
                 data: {
                     token
@@ -73,7 +74,7 @@ async function signUpService(req, res, next){
         errorLogger(req.custom.id, req.body.requestId, `Unexpected error while searching by email id | ${err.message}`, err)
         return res.status(500).json({
             statusCode: 1,
-            timestamp: Date.now,
+            timestamp: Date.now(),
             requestId: req.body.requestId,
             info: {
                 code: errors['006'].code,
@@ -88,6 +89,6 @@ async function signUpService(req, res, next){
 }
 
 
-module.exports = signUpService
+module.exports = loginService
 
 
